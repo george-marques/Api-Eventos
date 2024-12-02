@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Eventos.Entities
 {
@@ -17,11 +18,15 @@ namespace API.Eventos.Entities
 
         [Required(ErrorMessage = "O evento é obrigatório.")]
         public int EventoId { get; set; }
+
+        [NotMapped]
         public Evento Evento { get; set; }
 
         // Chave estrangeira e navegação para Participante
         [Required(ErrorMessage = "O participante é obrigatório.")]
         public int ParticipanteId { get; set; }
+
+        [NotMapped]
         public Participante Participante { get; set; }
         public bool IsDeleted { get; set; }
     }
