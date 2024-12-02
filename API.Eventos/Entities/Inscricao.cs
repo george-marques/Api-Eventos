@@ -1,16 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace API.Eventos.Entities
 {
     public class Inscricao
-    {
-        public Inscricao()
-        {
-            IsDeleted = false;
-        }
-        
+    {        
         public int InscricaoId { get; set; }
 
         [DataType(DataType.Date)]
@@ -22,7 +18,7 @@ namespace API.Eventos.Entities
 
         [NotMapped]
         [JsonIgnore]
-        public Evento Evento { get; set; }
+        public Evento? Evento { get; set; }
 
         // Chave estrangeira e navegação para Participante
         [Required(ErrorMessage = "O participante é obrigatório.")]
@@ -30,7 +26,9 @@ namespace API.Eventos.Entities
 
         [NotMapped]
         [JsonIgnore]
-        public Participante Participante { get; set; }
+        public Participante? Participante { get; set; }
+
+        [DefaultValue(false)]
         public bool IsDeleted { get; set; }
     }
 

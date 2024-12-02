@@ -1,14 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Eventos.Entities
 {
     public class Local
     {
-        public Local()
-        {
-            IsDeleted = false;
-        }
-
         public int LocalId { get; set; }
 
         [Required(ErrorMessage = "O nome do local é obrigatório.")]
@@ -21,6 +17,8 @@ namespace API.Eventos.Entities
 
         [Range(1, 10000, ErrorMessage = "A capacidade máxima deve ser entre 1 e 10.000 pessoas.")]
         public int CapacidadeMaxima { get; set; }
+
+        [DefaultValue(false)]
         public bool IsDeleted { get; set; }
 
     }

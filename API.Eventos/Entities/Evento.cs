@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -6,11 +7,6 @@ namespace API.Eventos.Entities
 {
     public class Evento
     {
-        public Evento()
-        {
-            IsDeleted = false;
-        }
-
         public int EventoId { get; set; } // O EF infere como chave primária pelo nome padrão.
 
         [Required(ErrorMessage = "O nome do evento é obrigatório.")]
@@ -44,6 +40,7 @@ namespace API.Eventos.Entities
         [JsonIgnore]
         public virtual Organizador? Organizador { get; set; } // Navegação para o Organizador do evento
 
+        [DefaultValue(false)]
         public bool IsDeleted { get; set; }
 
         // Propriedades de navegação para relacionamentos
@@ -52,12 +49,6 @@ namespace API.Eventos.Entities
         public virtual ICollection<Inscricao> Inscricoes { get; set; } = new List<Inscricao>();
         [NotMapped]
         public ICollection<Patrocinador> Patrocinadores { get; set; } = new List<Patrocinador>();
-
-        // Propriedades auxiliares
-        //[NotMapped]
-        //public List<int> PatrocinadorIds { get; set; } = new List<int>();
-
-
     }
 
 }

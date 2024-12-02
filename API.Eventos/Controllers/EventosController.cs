@@ -25,14 +25,20 @@ namespace API.Eventos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Evento>>> GetEventos()
         {
-            return await _context.Eventos.ToListAsync();
+            return await _context.Eventos
+                .Where(e => !e.IsDeleted) 
+                .Include(e => e.Patrocinadores) 
+                .ToListAsync();
         }
 
         // GET: api/Eventos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Evento>> GetEvento(int id)
         {
-            var evento = await _context.Eventos.FindAsync(id);
+            var evento = await _context.Eventos
+                .Where(e => !e.IsDeleted)
+                .Include(e => e.Patrocinadores)
+                .FirstOrDefaultAsync(e => e.EventoId == id);
 
             if (evento == null)
             {
@@ -42,6 +48,7 @@ namespace API.Eventos.Controllers
             return evento;
         }
 
+
         // PUT: api/Eventos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -49,20 +56,62 @@ namespace API.Eventos.Controllers
         {
             if (id != evento.EventoId)
             {
-                return BadRequest();
+                return BadRequest("O ID do evento na URL não corresponde ao ID no corpo da requisição.");
             }
 
-            _context.Entry(evento).State = EntityState.Modified;
+            // Verificar se o evento existe
+            var eventoExistente = await _context.Eventos
+                .Include(e => e.Patrocinadores)
+                .FirstOrDefaultAsync(e => e.EventoId == id);
+
+            if (eventoExistente == null)
+            {
+                return NotFound("O evento especificado não foi encontrado.");
+            }
+
+            // Atualizar propriedades principais do evento
+            eventoExistente.Nome = evento.Nome;
+            eventoExistente.Descricao = evento.Descricao;
+            eventoExistente.Data = evento.Data;
+            eventoExistente.LocalId = evento.LocalId;
+            eventoExistente.Capacidade = evento.Capacidade;
+            eventoExistente.OrganizadorId = evento.OrganizadorId;
+
+            // Atualizar patrocinadores
+            if (evento.Patrocinadores != null && evento.Patrocinadores.Any())
+            {
+                // Limpar patrocinadores antigos
+                eventoExistente.Patrocinadores.Clear();
+
+                foreach (var patrocinador in evento.Patrocinadores)
+                {
+                    if (patrocinador.PatrocinadorId == 0)
+                    {
+                        // Adicionar patrocinadores novos ao contexto
+                        _context.Patrocinadores.Add(patrocinador);
+                    }
+                    else
+                    {
+                        // Anexar patrocinadores existentes ao evento
+                        var patrocinadorExistente = await _context.Patrocinadores.FindAsync(patrocinador.PatrocinadorId);
+                        if (patrocinadorExistente != null)
+                        {
+                            eventoExistente.Patrocinadores.Add(patrocinadorExistente);
+                        }
+                    }
+                }
+            }
 
             try
             {
+                // Salvar alterações no banco
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!EventoExists(id))
                 {
-                    return NotFound();
+                    return NotFound("Conflito de atualização: o evento foi excluído.");
                 }
                 else
                 {
@@ -72,6 +121,8 @@ namespace API.Eventos.Controllers
 
             return NoContent();
         }
+
+
 
         // POST: api/Eventos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -106,8 +157,8 @@ namespace API.Eventos.Controllers
             {
                 return NotFound();
             }
-
-            _context.Eventos.Remove(evento);
+            evento.IsDeleted = false;
+            _context.Eventos.Update(evento);
             await _context.SaveChangesAsync();
 
             return NoContent();
