@@ -23,8 +23,6 @@ namespace API.Eventos.Entities
         public int CapacidadeMaxima { get; set; }
         public bool IsDeleted { get; set; }
 
-        // Relacionamento com eventos (1:N)
-        public ICollection<Evento> Eventos { get; set; } = new List<Evento>();
     }
 
 }

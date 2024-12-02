@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Eventos.Entities
 {
@@ -20,7 +22,9 @@ namespace API.Eventos.Entities
         public string Contato { get; set; }
         public bool IsDeleted { get; set; }
 
-        // Relacionamento 
+        // Relacionamento N:N
+        [NotMapped]
+        [JsonIgnore]
         public virtual ICollection<Evento> Eventos { get; set; } = new List<Evento>();
     }
 }

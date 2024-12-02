@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Eventos.Entities
 {
@@ -20,6 +21,7 @@ namespace API.Eventos.Entities
         public int EventoId { get; set; }
 
         [NotMapped]
+        [JsonIgnore]
         public Evento Evento { get; set; }
 
         // Chave estrangeira e navegação para Participante
@@ -27,6 +29,7 @@ namespace API.Eventos.Entities
         public int ParticipanteId { get; set; }
 
         [NotMapped]
+        [JsonIgnore]
         public Participante Participante { get; set; }
         public bool IsDeleted { get; set; }
     }

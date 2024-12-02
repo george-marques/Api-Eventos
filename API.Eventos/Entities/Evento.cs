@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Eventos.Entities
 {
@@ -29,7 +30,8 @@ namespace API.Eventos.Entities
 
         // Propriedades de navegação
         [NotMapped]
-        public virtual Local Local { get; set; } // Navegação para o Local do evento
+        [JsonIgnore]
+        public virtual Local? Local { get; set; } // Navegação para o Local do evento
 
         [Range(1, 10000, ErrorMessage = "A capacidade deve ser entre 1 e 10.000 pessoas.")]
         [Required(ErrorMessage = "A capacidade é obrigatória.")]
@@ -39,21 +41,23 @@ namespace API.Eventos.Entities
         public int OrganizadorId { get; set; }
 
         [NotMapped]
-        public virtual Organizador Organizador { get; set; } // Navegação para o Organizador do evento
+        [JsonIgnore]
+        public virtual Organizador? Organizador { get; set; } // Navegação para o Organizador do evento
 
         public bool IsDeleted { get; set; }
 
         // Propriedades de navegação para relacionamentos
         [NotMapped]
+        [JsonIgnore]
         public virtual ICollection<Inscricao> Inscricoes { get; set; } = new List<Inscricao>();
         [NotMapped]
-        public virtual ICollection<Patrocinador> Patrocinadores { get; set; } = new List<Patrocinador>();
+        public ICollection<Patrocinador> Patrocinadores { get; set; } = new List<Patrocinador>();
 
         // Propriedades auxiliares
-        [NotMapped]
-        public List<int> PatrocinadorIds { get; set; } = new List<int>();
-        [NotMapped]
-        public List<Patrocinador> PatrocinadoresDisponiveis { get; set; } = new List<Patrocinador>();
+        //[NotMapped]
+        //public List<int> PatrocinadorIds { get; set; } = new List<int>();
+
+
     }
 
 }

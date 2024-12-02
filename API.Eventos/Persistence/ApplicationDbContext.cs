@@ -29,19 +29,12 @@ namespace API.Eventos.Persistence
 
             // Configurações para muitos-para-muitos
             modelBuilder.Entity<Evento>()
-                .HasMany(e => e.Patrocinadores)
-                .WithMany(p => p.Eventos)
-                .UsingEntity<Dictionary<string, object>>(
-                    "EventoPatrocinador", // Nome da tabela de junção
-                    j => j.HasOne<Patrocinador>()
-                          .WithMany()
-                          .HasForeignKey("PatrocinadorId")
-                          .OnDelete(DeleteBehavior.Cascade),
-                    j => j.HasOne<Evento>()
-                          .WithMany()
-                          .HasForeignKey("EventoId")
-                          .OnDelete(DeleteBehavior.Cascade)
-                );
+        .HasMany(e => e.Patrocinadores)
+        .WithMany(p => p.Eventos)
+        .UsingEntity<Dictionary<string, object>>(
+            "EventoPatrocinador",
+            e => e.HasOne<Patrocinador>().WithMany().HasForeignKey("PatrocinadorId"),
+            p => p.HasOne<Evento>().WithMany().HasForeignKey("EventoId"));
 
         }
 

@@ -24,8 +24,6 @@ namespace API.Eventos.Entities
         public string CPF { get; set; }
         public bool IsDeleted { get; set; }
 
-        // Relacionamento com inscrições (1:N)
-        public ICollection<Inscricao> Inscricoes { get; set; } = new List<Inscricao>();
     }
 
 }
