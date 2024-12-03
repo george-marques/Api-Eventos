@@ -20,6 +20,7 @@ O e-Evento é uma aplicação voltada para o gerenciamento de eventos e inscriç
 6. **Gerenciamento de Patrocinadores**
 7. **Autenticação e Autorização**
    - JWT para proteger endpoints.
+   - Utilize o [JWT.io](https://jwt.io/) para gerar o token.
 8. **Documentação Interativa**
    - Swagger UI para explorar os endpoints disponíveis.
 
@@ -29,7 +30,7 @@ Antes de executar o projeto, certifique-se de ter instalado:
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download)
 - [SQL Server](https://www.microsoft.com/sql-server)
 - Ferramenta para gerenciar o banco de dados (SSMS)
-- IDE como Visual Studio 2022 ou Visual Studio Code
+- IDE Visual Studio 2022
 
 
 ## 🏗️ Configuração do Ambiente
@@ -46,7 +47,7 @@ Antes de executar o projeto, certifique-se de ter instalado:
 
 3. **Restaurar Pacotes NuGet**
 
-   No Visual Studio, clique com o botão direito do mouse no projeto na **Solution Explorer** e selecione **Restore NuGet Packages**. Isso garantirá que todas as dependências necessárias sejam baixadas e instaladas.
+   No Visual Studio, clique com o botão direito do mouse na solução no **Gerenciador de Soluções** e selecione **Restaurar Pacotes NuGet**. Isso garantirá que todas as dependências necessárias sejam baixadas e instaladas.
 
 4. **Configurar a Conexão com o Banco de Dados**
 
@@ -61,10 +62,10 @@ Antes de executar o projeto, certifique-se de ter instalado:
 
 5. **Criar o Banco de Dados**
 
-   Execute as migrações para criar o banco de dados e suas tabelas. Abra o terminal da aplicação e execute:
+   Execute as migrações para criar o banco de dados e suas tabelas. Abra o Console do Gerenciador de Pacotes da aplicação e execute:
 
     ```bash
-     dotnet ef database update
+     Update-Database
     
 6. **Executar o Projeto**
 
