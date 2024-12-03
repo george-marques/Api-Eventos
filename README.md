@@ -52,10 +52,12 @@ Antes de executar o projeto, certifique-se de ter instalado:
 
    - Localize o arquivo de configuração `appsettings.json` e edite a string de conexão para o seu banco de dados SQL Server.
 
-    ```xml
-   "ConnectionStrings": {
-  "ApplicationDbContext": "Server=SEU_SERVIDOR;Initial Catalog=EventosDb;Integrated Security=True;Trust Server Certificate=True"
-}
+   ```json
+   {
+     "ConnectionStrings": {
+       "ApplicationDbContext": "Server=SEU_SERVIDOR;Initial Catalog=EventosDb;Integrated Security=True;TrustServerCertificate=True"
+     }
+   }
 
 5. **Criar o Banco de Dados**
 
