@@ -25,14 +25,18 @@ namespace API.Eventos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Local>>> GetLocais()
         {
-            return await _context.Locais.ToListAsync();
+            return await _context.Locais
+                .Where(e => !e.IsDeleted)
+                .ToListAsync();
         }
 
         // GET: api/Locais/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Local>> GetLocal(int id)
         {
-            var local = await _context.Locais.FindAsync(id);
+            var local = await _context.Locais
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.LocalId == id);
 
             if (local == null)
             {
@@ -88,14 +92,33 @@ namespace API.Eventos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocal(int id)
         {
-            var local = await _context.Locais.FindAsync(id);
+            var local = await _context.Locais
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.LocalId == id);
             if (local == null)
             {
                 return NotFound();
             }
 
-            _context.Locais.Remove(local);
-            await _context.SaveChangesAsync();
+            // Atualiza o valor de IsDeleted para true
+            local.IsDeleted = true;
+            _context.Entry(local).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!LocalExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }

@@ -25,14 +25,18 @@ namespace API.Eventos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Patrocinador>>> GetPatrocinadores()
         {
-            return await _context.Patrocinadores.ToListAsync();
+            return await _context.Patrocinadores
+                .Where(e => !e.IsDeleted)
+                .ToListAsync();
         }
 
         // GET: api/Patrocinadores/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Patrocinador>> GetPatrocinador(int id)
         {
-            var patrocinador = await _context.Patrocinadores.FindAsync(id);
+            var patrocinador = await _context.Patrocinadores
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.PatrocinadorId == id);
 
             if (patrocinador == null)
             {
@@ -88,14 +92,33 @@ namespace API.Eventos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePatrocinador(int id)
         {
-            var patrocinador = await _context.Patrocinadores.FindAsync(id);
+            var patrocinador = await _context.Patrocinadores
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.PatrocinadorId == id);
             if (patrocinador == null)
             {
                 return NotFound();
             }
 
-            _context.Patrocinadores.Remove(patrocinador);
-            await _context.SaveChangesAsync();
+            // Atualiza o valor de IsDeleted para true
+            patrocinador.IsDeleted = true;
+            _context.Entry(patrocinador).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PatrocinadorExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }

@@ -25,14 +25,18 @@ namespace API.Eventos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Inscricao>>> GetInscricoes()
         {
-            return await _context.Inscricoes.ToListAsync();
+            return await _context.Inscricoes
+                .Where(e => !e.IsDeleted)
+                .ToListAsync();
         }
 
         // GET: api/Inscricoes/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Inscricao>> GetInscricao(int id)
         {
-            var inscricao = await _context.Inscricoes.FindAsync(id);
+            var inscricao = await _context.Inscricoes
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.InscricaoId == id);
 
             if (inscricao == null)
             {
@@ -88,14 +92,33 @@ namespace API.Eventos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteInscricao(int id)
         {
-            var inscricao = await _context.Inscricoes.FindAsync(id);
+            var inscricao = await _context.Inscricoes
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.InscricaoId == id);
             if (inscricao == null)
             {
                 return NotFound();
             }
 
-            _context.Inscricoes.Remove(inscricao);
-            await _context.SaveChangesAsync();
+            // Atualiza o valor de IsDeleted para true
+            inscricao.IsDeleted = true;
+            _context.Entry(inscricao).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!InscricaoExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }

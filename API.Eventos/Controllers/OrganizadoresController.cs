@@ -25,14 +25,18 @@ namespace API.Eventos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Organizador>>> GetOrganizadores()
         {
-            return await _context.Organizadores.ToListAsync();
+            return await _context.Organizadores
+                .Where(e => !e.IsDeleted)
+                .ToListAsync();
         }
 
         // GET: api/Organizadores/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Organizador>> GetOrganizador(int id)
         {
-            var organizador = await _context.Organizadores.FindAsync(id);
+            var organizador = await _context.Organizadores
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.OrganizadorId == id);
 
             if (organizador == null)
             {
@@ -88,14 +92,33 @@ namespace API.Eventos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrganizador(int id)
         {
-            var organizador = await _context.Organizadores.FindAsync(id);
+            var organizador = await _context.Organizadores
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.OrganizadorId == id);
             if (organizador == null)
             {
                 return NotFound();
             }
 
-            _context.Organizadores.Remove(organizador);
-            await _context.SaveChangesAsync();
+            // Atualiza o valor de IsDeleted para true
+            organizador.IsDeleted = true;
+            _context.Entry(organizador).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrganizadorExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }

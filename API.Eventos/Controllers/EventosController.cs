@@ -56,71 +56,27 @@ namespace API.Eventos.Controllers
         {
             if (id != evento.EventoId)
             {
-                return BadRequest("O ID do evento na URL não corresponde ao ID no corpo da requisição.");
+                return BadRequest();
             }
-
-            // Verificar se o evento existe
-            var eventoExistente = await _context.Eventos
-                .Include(e => e.Patrocinadores)
-                .FirstOrDefaultAsync(e => e.EventoId == id);
-
-            if (eventoExistente == null)
-            {
-                return NotFound("O evento especificado não foi encontrado.");
-            }
-
-            // Atualizar propriedades principais do evento
-            eventoExistente.Nome = evento.Nome;
-            eventoExistente.Descricao = evento.Descricao;
-            eventoExistente.Data = evento.Data;
-            eventoExistente.LocalId = evento.LocalId;
-            eventoExistente.Capacidade = evento.Capacidade;
-            eventoExistente.OrganizadorId = evento.OrganizadorId;
-
-            // Atualizar patrocinadores
-            if (evento.Patrocinadores != null && evento.Patrocinadores.Any())
-            {
-                // Limpar patrocinadores antigos
-                eventoExistente.Patrocinadores.Clear();
-
-                foreach (var patrocinador in evento.Patrocinadores)
-                {
-                    if (patrocinador.PatrocinadorId == 0)
-                    {
-                        // Adicionar patrocinadores novos ao contexto
-                        _context.Patrocinadores.Add(patrocinador);
-                    }
-                    else
-                    {
-                        // Anexar patrocinadores existentes ao evento
-                        var patrocinadorExistente = await _context.Patrocinadores.FindAsync(patrocinador.PatrocinadorId);
-                        if (patrocinadorExistente != null)
-                        {
-                            eventoExistente.Patrocinadores.Add(patrocinadorExistente);
-                        }
-                    }
-                }
-            }
-
+            _context.Entry(evento).State = EntityState.Modified;
             try
             {
-                // Salvar alterações no banco
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!EventoExists(id))
                 {
-                    return NotFound("Conflito de atualização: o evento foi excluído.");
+                    return NotFound();
                 }
                 else
                 {
                     throw;
                 }
             }
-
             return NoContent();
         }
+
 
 
 
@@ -152,14 +108,33 @@ namespace API.Eventos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvento(int id)
         {
-            var evento = await _context.Eventos.FindAsync(id);
+            var evento = await _context.Eventos
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.EventoId == id);
             if (evento == null)
             {
                 return NotFound();
             }
-            evento.IsDeleted = false;
-            _context.Eventos.Update(evento);
-            await _context.SaveChangesAsync();
+
+            // Atualiza o valor de IsDeleted para true
+            evento.IsDeleted = true;
+            _context.Entry(evento).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EventoExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }

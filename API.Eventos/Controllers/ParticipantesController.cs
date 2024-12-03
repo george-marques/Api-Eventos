@@ -25,14 +25,18 @@ namespace API.Eventos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Participante>>> GetParticipantes()
         {
-            return await _context.Participantes.ToListAsync();
+            return await _context.Participantes
+                .Where(e => !e.IsDeleted)
+                .ToListAsync();
         }
 
         // GET: api/Participantes/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Participante>> GetParticipante(int id)
         {
-            var participante = await _context.Participantes.FindAsync(id);
+            var participante = await _context.Participantes
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.ParticipanteId == id);
 
             if (participante == null)
             {
@@ -88,14 +92,33 @@ namespace API.Eventos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteParticipante(int id)
         {
-            var participante = await _context.Participantes.FindAsync(id);
+            var participante = await _context.Participantes
+                .Where(e => !e.IsDeleted)
+                .FirstOrDefaultAsync(e => e.ParticipanteId == id);
             if (participante == null)
             {
                 return NotFound();
             }
 
-            _context.Participantes.Remove(participante);
-            await _context.SaveChangesAsync();
+            // Atualiza o valor de IsDeleted para true
+            participante.IsDeleted = true;
+            _context.Entry(participante).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ParticipanteExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
