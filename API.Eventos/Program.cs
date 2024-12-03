@@ -24,7 +24,7 @@ builder.Services.AddSwaggerGen(c =>
             Contact = new OpenApiContact
             {
                 Name = "Desenvolvido por George",
-                Url = new Uri("https://localhost:7141/swagger/index.html")
+                Url = new Uri("https://github.com/george-marques")
             }
         });
 
