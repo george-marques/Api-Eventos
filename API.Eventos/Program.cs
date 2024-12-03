@@ -1,3 +1,4 @@
+using API.Eventos.Authentication;
 using API.Eventos.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -26,6 +27,19 @@ builder.Services.AddSwaggerGen(c =>
                 Url = new Uri("https://localhost:7141/swagger/index.html")
             }
         });
+
+    // Configuração de autenticação JWT no Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Insira o token JWT no campo abaixo:\nExemplo: Bearer {seu token}"
+    });
+
+    // Aplica o esquema de segurança apenas em endpoints protegidos
+    c.OperationFilter<AuthenticationOperationFilter>();
 
     // Pegamos o nome no nosso arquivo Assembly e armazenamos na variável
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
