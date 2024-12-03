@@ -60,7 +60,7 @@ namespace API.Eventos.Controllers
         /// Obtém uma inscrição específica pelo seu identificador.
         /// </summary>
         /// <param name="id">O identificador da inscrição.</param>
-        /// <returns>Retorna os detalhes completos da inscrição solicitada, ou um código de erro caso o evento não seja encontrado.</returns>
+        /// <returns>Retorna os detalhes completos da inscrição solicitada, ou um código de erro caso a inscrição não seja encontrada.</returns>
         /// <remarks>
         /// ### Descrição
         /// Este método busca uma inscrição específica pelo ID. 
@@ -238,7 +238,7 @@ namespace API.Eventos.Controllers
         /// </remarks>
         /// <response code="204">A inscrição foi marcada como excluída com sucesso.</response>
         /// <response code="404">Se a inscrição não for encontrada.</response>
-        /// <response code="500">Erro interno ao tentar excluir o evento.</response>
+        /// <response code="500">Erro interno ao tentar excluir a inscrição.</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
