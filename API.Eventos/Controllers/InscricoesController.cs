@@ -145,9 +145,32 @@ namespace API.Eventos.Controllers
         {
             if (id != inscricao.InscricaoId)
             {
-                return BadRequest();
+                return BadRequest("O ID fornecido não corresponde ao ID da inscrição.");
             }
 
+            // Verifica se a inscrição existe e não está deletada
+            var inscricaoExistente = await _context.Inscricoes
+                .AsNoTracking() // Evita rastrear a entidade
+                .FirstOrDefaultAsync(i => i.InscricaoId == id && !i.IsDeleted);
+
+            if (inscricaoExistente == null)
+            {
+                return NotFound("A inscrição não existe ou está marcada como deletada.");
+            }
+
+            // Verifica se o evento e participante associados estão válidos
+            var evento = await _context.Eventos
+                .FirstOrDefaultAsync(e => e.EventoId == inscricao.EventoId && !e.IsDeleted);
+
+            var participante = await _context.Participantes
+                .FirstOrDefaultAsync(p => p.ParticipanteId == inscricao.ParticipanteId && !p.IsDeleted);
+
+            if (evento == null || participante == null)
+            {
+                return BadRequest("O evento ou participante não existe ou está marcado como deletado.");
+            }
+
+            // Atualiza a entidade no contexto
             _context.Entry(inscricao).State = EntityState.Modified;
 
             try
@@ -168,6 +191,7 @@ namespace API.Eventos.Controllers
 
             return NoContent();
         }
+
 
         /// <summary>
         /// Cria uma nova inscrição.
@@ -206,6 +230,19 @@ namespace API.Eventos.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Inscricao>> PostInscricao(Inscricao inscricao)
         {
+            // Verifica se o Evento e o Participante existem e não estão marcados como deletados
+            var evento = await _context.Eventos
+                .FirstOrDefaultAsync(e => e.EventoId == inscricao.EventoId && !e.IsDeleted);
+
+            var participante = await _context.Participantes
+                .FirstOrDefaultAsync(p => p.ParticipanteId == inscricao.ParticipanteId && !p.IsDeleted);
+
+            if (evento == null || participante == null)
+            {
+                return BadRequest("O evento ou participante não existe ou está marcado como deletado.");
+            }
+
+            // Adiciona a inscrição se as validações passarem
             _context.Inscricoes.Add(inscricao);
             await _context.SaveChangesAsync();
 

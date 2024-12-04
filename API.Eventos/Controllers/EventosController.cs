@@ -184,7 +184,70 @@ namespace API.Eventos.Controllers
             {
                 return BadRequest();
             }
+
+            // Valida se o EventoId não está marcado como deletado
+            var eventoExistente = await _context.Eventos
+                .FirstOrDefaultAsync(e => e.EventoId == id && !e.IsDeleted);
+
+            if (eventoExistente == null)
+            {
+                return BadRequest("O evento especificado não existe ou está marcado como deletado.");
+            }
+
+            // Valida o LocalId
+            var local = await _context.Locais
+                .FirstOrDefaultAsync(l => l.LocalId == evento.LocalId && !l.IsDeleted);
+
+            if (local == null)
+            {
+                return BadRequest("O Local especificado não existe ou está marcado como deletado.");
+            }
+
+            // Valida o OrganizadorId
+            var organizador = await _context.Organizadores
+                .FirstOrDefaultAsync(o => o.OrganizadorId == evento.OrganizadorId && !o.IsDeleted);
+
+            if (organizador == null)
+            {
+                return BadRequest("O Organizador especificado não existe ou está marcado como deletado.");
+            }
+
+            // Atualiza os Patrocinadores
+            var patrocinadoresFinal = new List<Patrocinador>();
+            if (evento.Patrocinadores != null && evento.Patrocinadores.Any())
+            {
+                foreach (var patrocinador in evento.Patrocinadores)
+                {
+                    if (patrocinador.PatrocinadorId == 0)
+                    {
+                        // Adiciona um novo patrocinador
+                        _context.Patrocinadores.Add(patrocinador);
+                        patrocinadoresFinal.Add(patrocinador);
+                    }
+                    else
+                    {
+                        // Verifica se o patrocinador já existe e não está deletado
+                        var patrocinadorExistente = await _context.Patrocinadores
+                            .FirstOrDefaultAsync(p => p.PatrocinadorId == patrocinador.PatrocinadorId && !p.IsDeleted);
+
+                        if (patrocinadorExistente == null)
+                        {
+                            return BadRequest($"O Patrocinador com ID {patrocinador.PatrocinadorId} não existe ou está marcado como deletado.");
+                        }
+
+                        // Usa a instância já rastreada
+                        patrocinadoresFinal.Add(patrocinadorExistente);
+                    }
+                }
+            }
+
+            // Substitui os patrocinadores do evento pela lista processada
+            evento.Patrocinadores = patrocinadoresFinal;
+
+            // Desanexa a entidade existente e anexa a nova instância do evento
+            _context.Entry(eventoExistente).State = EntityState.Detached;
             _context.Entry(evento).State = EntityState.Modified;
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -200,9 +263,9 @@ namespace API.Eventos.Controllers
                     throw;
                 }
             }
+
             return NoContent();
         }
-
 
         /// <summary>
         /// Cria um novo evento e seus patrocinadores associados.
@@ -257,19 +320,67 @@ namespace API.Eventos.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Evento>> PostEvento(Evento evento)
         {
+            // Valida o LocalId
+            var local = await _context.Locais
+                .FirstOrDefaultAsync(l => l.LocalId == evento.LocalId && !l.IsDeleted);
+
+            if (local == null)
+            {
+                return BadRequest("O Local especificado não existe ou está marcado como deletado.");
+            }
+
+            // Valida o OrganizadorId
+            var organizador = await _context.Organizadores
+                .FirstOrDefaultAsync(o => o.OrganizadorId == evento.OrganizadorId && !o.IsDeleted);
+
+            if (organizador == null)
+            {
+                return BadRequest("O Organizador especificado não existe ou está marcado como deletado.");
+            }
+
+            // Processa os Patrocinadores
+            var patrocinadoresFinal = new List<Patrocinador>();
             if (evento.Patrocinadores != null && evento.Patrocinadores.Any())
             {
                 foreach (var patrocinador in evento.Patrocinadores)
                 {
                     if (patrocinador.PatrocinadorId == 0)
                     {
+                        // Adiciona um novo patrocinador
                         _context.Patrocinadores.Add(patrocinador);
+                        patrocinadoresFinal.Add(patrocinador);
+                    }
+                    else
+                    {
+                        // Verifica se o patrocinador já existe e não está deletado
+                        var patrocinadorExistente = await _context.Patrocinadores
+                            .FirstOrDefaultAsync(p => p.PatrocinadorId == patrocinador.PatrocinadorId && !p.IsDeleted);
+
+                        if (patrocinadorExistente == null)
+                        {
+                            return BadRequest($"O Patrocinador com ID {patrocinador.PatrocinadorId} não existe ou está marcado como deletado.");
+                        }
+
+                        // Usa a instância já rastreada
+                        patrocinadoresFinal.Add(patrocinadorExistente);
                     }
                 }
             }
 
+            // Substitui os patrocinadores pelo conjunto processado
+            evento.Patrocinadores = patrocinadoresFinal;
+
+            // Adiciona o evento
             _context.Eventos.Add(evento);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao salvar os dados: {ex.Message}");
+            }
 
             return CreatedAtAction("GetEvento", new { id = evento.EventoId }, evento);
         }
