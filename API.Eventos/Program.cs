@@ -1,4 +1,3 @@
-using API.Eventos.Authentication;
 using API.Eventos.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -16,41 +15,49 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1",
-        new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "API de Eventos",
+        Description = "Sistema de Gerenciamento de Eventos e Inscrições",
+        Contact = new OpenApiContact
         {
-            Title = "API de Eventos",
-            Description = "Sistema de Gerenciamento de Eventos e Inscrições",
-            Contact = new OpenApiContact
-            {
-                Name = "Desenvolvido por George",
-                Url = new Uri("https://github.com/george-marques")
-            }
-        });
+            Name = "Desenvolvido por George",
+            Url = new Uri("https://github.com/george-marques")
+        }
+    });
 
     // Configuração de autenticação JWT no Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
+        Scheme = "Bearer",
         BearerFormat = "JWT",
+        In = ParameterLocation.Header,
         Description = "Insira o token JWT no campo abaixo:\nExemplo: Bearer {seu token}"
     });
 
-    // Aplica o esquema de segurança apenas em endpoints protegidos
-    c.OperationFilter<AuthenticationOperationFilter>();
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
 
-    // Pegamos o nome no nosso arquivo Assembly e armazenamos na variável
+    // Obtém o nome do arquivo XML para a documentação
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-
-    // Pega o diretório base da aplicação e junta com o nome do arquivo que acabou de criar
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
     c.IncludeXmlComments(xmlPath);
 });
-
-
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContext"))

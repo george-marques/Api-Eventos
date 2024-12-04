@@ -144,7 +144,6 @@ namespace API.Eventos.Controllers
         /// <response code="400">Se o identificador do local não coincidir.</response>
         /// <response code="404">Se o local não for encontrado.</response>
         [HttpPut("{id}")]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -210,7 +209,6 @@ namespace API.Eventos.Controllers
         /// <response code="400">Se encontrar um erro nos dados fornecidos.</response>
         /// <response code="500">Erro interno no servidor.</response>
         [HttpPost]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -251,7 +249,6 @@ namespace API.Eventos.Controllers
         /// <response code="404">Se o local não for encontrado.</response>
         /// <response code="500">Erro interno ao tentar excluir o local.</response>
         [HttpDelete("{id}")]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

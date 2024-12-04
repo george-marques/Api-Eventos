@@ -251,7 +251,6 @@ namespace API.Eventos.Controllers
         /// <response code="404">Se o participante não for encontrado.</response>
         /// <response code="500">Erro interno ao tentar excluir o participante.</response>
         [HttpDelete("{id}")]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

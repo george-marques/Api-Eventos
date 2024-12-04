@@ -175,7 +175,6 @@ namespace API.Eventos.Controllers
         /// <response code="400">O ID do evento não corresponde ou a requisição é inválida.</response>
         /// <response code="404">O evento com o ID especificado não foi encontrado.</response>
         [HttpPut("{id}")]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -256,7 +255,6 @@ namespace API.Eventos.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Authorize]
         public async Task<ActionResult<Evento>> PostEvento(Evento evento)
         {
             if (evento.Patrocinadores != null && evento.Patrocinadores.Any())
@@ -310,7 +308,6 @@ namespace API.Eventos.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Authorize]
         public async Task<IActionResult> DeleteEvento(int id)
         {
             var evento = await _context.Eventos
